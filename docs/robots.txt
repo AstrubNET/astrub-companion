@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://astrubnet.github.io/astrub-companion/sitemap.xml

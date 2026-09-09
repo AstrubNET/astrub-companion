@@ -1,0 +1,25 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  syntax:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m py_compile macos/astrub_companion.py
+      - run: bash -n macos/*.command macos/*.sh
+      - run: php -l api/public/api/companion/prices.php
+      - run: php -l api/public/api/companion/servers.php
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m py_compile windows/astrub_companion.py
+      - run: python -m pip install pyinstaller
+      - run: pyinstaller --onefile --noconsole --name AstrubCompanion windows/astrub_companion.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AstrubCompanion-Windows
+          path: dist/AstrubCompanion.exe

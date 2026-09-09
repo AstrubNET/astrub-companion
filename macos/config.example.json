@@ -1,0 +1,11 @@
+{
+  "api_url": "https://www.astrub.net/api/companion/prices.php",
+  "server_id": 3,
+  "server_name": "Draconiros",
+  "device_id": "00000000-0000-4000-8000-000000000000",
+  "interface": "auto",
+  "selection_ttl_seconds": 120,
+  "purchase_ttl_seconds": 20,
+  "market_view_ttl_seconds": 20,
+  "market_view_dedupe_seconds": 300
+}

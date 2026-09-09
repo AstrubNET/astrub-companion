@@ -1,0 +1,10 @@
+config.json
+queue.sqlite3
+*.pcap
+*.pcapng
+*.log
+__pycache__/
+.DS_Store
+dist/
+build/
+*.spec
