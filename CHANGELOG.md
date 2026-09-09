@@ -1,5 +1,11 @@
 # Historique
 
+## 1.1.2
+
+- droits d'exécution des commandes macOS préservés dans l'archive publiée ;
+- procédure Gatekeeper détaillée dans le README, la documentation macOS et la FAQ ;
+- commande de réparation `chmod +x` documentée pour les anciennes archives.
+
 ## 1.1.1
 
 - encodage UTF-8 corrigé pour Windows PowerShell 5.1, les journaux et les consoles ;

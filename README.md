@@ -53,7 +53,15 @@ Le service démarre ensuite automatiquement avec Windows. Consultez [la document
 
 1. Téléchargez et décompressez `Astrub-Companion-macOS.zip`.
 2. Faites un clic droit sur `Installer.command`, puis **Ouvrir**.
-3. Choisissez votre serveur Dofus et validez.
+3. Si macOS bloque encore le fichier, ouvrez **Réglages Système > Confidentialité et sécurité**, descendez jusqu'à la section **Sécurité**, puis cliquez sur **Ouvrir quand même** en face de `Installer.command` et confirmez.
+4. Choisissez votre serveur Dofus et validez.
+
+Si macOS indique que vous ne disposez pas des privilèges nécessaires, ouvrez Terminal dans le dossier décompressé et exécutez :
+
+```bash
+chmod +x *.command *.sh
+./Installer.command
+```
 
 Le service démarre ensuite automatiquement avec le Mac. Consultez [la documentation macOS](macos/README.md).
 

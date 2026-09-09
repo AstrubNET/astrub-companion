@@ -42,6 +42,12 @@ Non. L'ouverture d'une catégorie transmet surtout une liste d'objets, pas tous 
 
 Windows ne fournit pas directement l'équivalent de `tcpdump`. Npcap donne un accès passif aux paquets réseau. Son édition gratuite interdit la redistribution et l'installation silencieuse : Astrub Companion le télécharge donc directement depuis le site officiel, vérifie sa signature puis affiche son assistant.
 
+## macOS refuse d'ouvrir `Installer.command`. Que faire ?
+
+Faites d'abord un clic droit sur `Installer.command`, puis choisissez **Ouvrir**. Si macOS le bloque encore, ouvrez **Réglages Système > Confidentialité et sécurité**, descendez jusqu'à la section **Sécurité**, puis cliquez sur **Ouvrir quand même** et confirmez. Ce bouton apparaît après une première tentative d'ouverture.
+
+Si le message parle de « privilèges d'accès nécessaires », le fichier n'est pas exécutable. Dans Terminal, depuis le dossier décompressé, lancez `chmod +x *.command *.sh`, puis `./Installer.command`. Les archives 1.1.2 et suivantes corrigent automatiquement ce droit.
+
 ## Les paquets sont-ils sauvegardés ?
 
 Non. Ils sont filtrés et traités en mémoire. Aucun fichier `.pcap` ou `.pcapng` n'est créé.

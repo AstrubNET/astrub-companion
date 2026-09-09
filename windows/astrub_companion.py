@@ -554,7 +554,7 @@ class Companion:
                 method="POST",
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "Astrub-Companion-Windows/1.1.1",
+                    "User-Agent": "Astrub-Companion-Windows/1.1.2",
                 },
             )
             try:

@@ -535,7 +535,7 @@ class Companion:
                 method="POST",
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "Astrub-Companion/1.0.0",
+                    "User-Agent": "Astrub-Companion-macOS/1.1.2",
                 },
             )
             try:

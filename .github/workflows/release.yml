@@ -26,6 +26,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Préserver les droits d'exécution macOS
+        run: chmod +x macos/*.command macos/*.sh
       - run: zip -r Astrub-Companion-macOS.zip macos LICENSE README.md PRIVACY.md SECURITY.md ARCHITECTURE.md FAQ.md -x '*/__pycache__/*' '*.pyc'
       - uses: actions/upload-artifact@v6
         with:
