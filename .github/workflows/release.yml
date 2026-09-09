@@ -18,7 +18,7 @@ jobs:
         run: |
           Copy-Item dist/AstrubCompanion.exe windows/AstrubCompanion.exe
           Compress-Archive -Path windows/*,LICENSE,README.md,PRIVACY.md,SECURITY.md,ARCHITECTURE.md,FAQ.md -DestinationPath Astrub-Companion-Windows.zip
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: windows
           path: Astrub-Companion-Windows.zip
@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: zip -r Astrub-Companion-macOS.zip macos LICENSE README.md PRIVACY.md SECURITY.md ARCHITECTURE.md FAQ.md -x '*/__pycache__/*' '*.pyc'
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: macos
           path: Astrub-Companion-macOS.zip
@@ -35,7 +35,7 @@ jobs:
     needs: [windows, macos]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           path: artifacts
           merge-multiple: true
