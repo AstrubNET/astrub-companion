@@ -68,6 +68,10 @@ La contribution structurée est conservée dans une petite file SQLite locale pu
 
 Chaque archive contient des commandes **Pause**, **Reprendre**, **Statut** et **Désinstaller**. Sous Windows, Npcap est conservé car Wireshark ou d'autres logiciels peuvent l'utiliser.
 
+## Comment suis-je averti d'une nouvelle version ?
+
+À partir de la version 1.1.3, le Companion consulte périodiquement la dernière release stable du dépôt officiel. Une notification native propose d'ouvrir la page GitHub lorsque sa version est plus récente. Aucune mise à jour n'est installée silencieusement : l'utilisateur conserve la maîtrise d'un logiciel fonctionnant avec des droits de capture réseau.
+
 ## Puis-je vérifier ce qui est envoyé à l'API ?
 
 Oui. Recherchez `enqueue_once` et `flush` dans `astrub_companion.py`. Les champs `object_uid` et `offer_id` sont explicitement supprimés avant la mise en file et l'envoi HTTPS.

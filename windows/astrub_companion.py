@@ -275,6 +275,26 @@ def decode_kbt_market_view(payload: bytes):
         return None, None
 
 
+def decode_jzn_market_view(payload: bytes):
+    """Extract (item_id, unit_price) from the current detailed market response."""
+    try:
+        fields = protobuf_fields(payload)
+        outer = {number: value for number, wire, value in fields if wire == 0}
+        details = next(value for number, wire, value in fields if number == 2 and wire == 2)
+        detail_fields = protobuf_fields(details)
+        inner = {number: value for number, wire, value in detail_fields if wire == 0}
+        packed_prices = next(
+            value for number, wire, value in detail_fields if number == 6 and wire == 2
+        )
+        price, _ = read_varint(packed_prices)
+        item_id = outer.get(1)
+        if item_id != inner.get(2):
+            return None, None
+        return item_id, price
+    except (StopIteration, ValueError):
+        return None, None
+
+
 class Queue:
     def __init__(self, path: Path):
         self.db = sqlite3.connect(path)
@@ -368,20 +388,29 @@ class Companion:
             if now - purchase["created_at"] <= self.config.get("purchase_ttl_seconds", 20)
         }
         values = varint_map(payload)
-        if direction == "out" and message_type == "keh" and 1 in values:
+        if direction == "out" and message_type in {"keh", "kde"}:
             # keh annonce une sélection potentielle. Dès que l'utilisateur
             # change d'objet, l'ancienne association ne doit plus être utilisée.
-            self.candidate_item_id = values[1]
+            if message_type == "keh":
+                item_id = values.get(1)
+                requests_prices = values.get(2) == 1
+            else:
+                item_id = values.get(2)
+                requests_prices = values.get(1) == 1
+            if item_id is None:
+                return
+            self.candidate_item_id = item_id
             self.candidate_item_at = now
             if self.current_item_id != self.candidate_item_id:
                 self.current_item_id = None
                 self.current_item_at = 0.0
             logging.debug("Objet HDV candidat: %s", self.candidate_item_id)
-            if values.get(2) == 1:
-                self.pending_market_views[values[1]] = now
+            if requests_prices:
+                self.pending_market_views[item_id] = now
             return
-        if direction == "in" and message_type == "kbt":
-            item_id, price = decode_kbt_market_view(payload)
+        if direction == "in" and message_type in {"kbt", "jzn"}:
+            decoder = decode_kbt_market_view if message_type == "kbt" else decode_jzn_market_view
+            item_id, price = decoder(payload)
             requested_at = self.pending_market_views.get(item_id)
             if item_id is None or price is None or price <= 0 or requested_at is None:
                 if item_id is not None and price == 0:
@@ -554,7 +583,7 @@ class Companion:
                 method="POST",
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "Astrub-Companion-Windows/1.1.2",
+                    "User-Agent": "Astrub-Companion-Windows/1.1.3",
                 },
             )
             try:

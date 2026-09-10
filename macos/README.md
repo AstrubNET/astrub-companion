@@ -15,8 +15,13 @@ Le service `launchd` démarre immédiatement et à chaque démarrage du Mac.
 - `Pause.command` : arrêt temporaire ;
 - `Reprendre.command` : reprise de l'écoute ;
 - `Desinstaller.command` : suppression du service et des données locales.
+- `RechercherUneMiseAJour.command` : vérification immédiate de la dernière release stable.
 
 Les fichiers sont installés dans `/Library/Application Support/Astrub Companion`. Aucun fichier PCAP n'est enregistré.
+
+## Mises à jour
+
+Un agent utilisateur vérifie GitHub au démarrage de la session puis toutes les six heures. Si une version stable plus récente existe, macOS affiche une notification avec un bouton ouvrant la release officielle. Le programme ne remplace jamais silencieusement un composant exécuté avec des privilèges élevés.
 
 ## Gatekeeper
 

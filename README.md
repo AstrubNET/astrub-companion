@@ -65,6 +65,14 @@ chmod +x *.command *.sh
 
 Le service démarre ensuite automatiquement avec le Mac. Consultez [la documentation macOS](macos/README.md).
 
+## Mises à jour
+
+Astrub Companion vérifie uniquement la dernière release stable publiée sur le dépôt officiel GitHub. Lorsqu'une version plus récente est disponible, une notification native propose d'ouvrir sa page de téléchargement : aucune archive provenant d'un autre domaine n'est utilisée et aucune mise à jour n'est installée silencieusement avec des privilèges administrateur.
+
+- **Windows** : vérification à l'ouverture de session et chaque jour ;
+- **macOS** : vérification à l'ouverture de session puis toutes les six heures ;
+- une commande **RechercherUneMiseAJour** est également fournie sur les deux plateformes.
+
 ## FAQ
 
 Les réponses sur la sécurité, les données envoyées, Npcap, les bannissements et la désinstallation sont réunies dans [FAQ.md](FAQ.md).

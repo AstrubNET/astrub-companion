@@ -14,6 +14,7 @@ L'installation privilégie `AstrubCompanion.exe` lorsqu'il est placé dans ce do
 - `Pause.cmd` interrompt la collecte et désactive son démarrage ;
 - `Reprendre.cmd` réactive et relance la collecte ;
 - `Desinstaller.cmd` retire le programme et ses données locales.
+- `RechercherUneMiseAJour.cmd` vérifie immédiatement la dernière release stable.
 
 Les fichiers locaux se trouvent dans `C:\ProgramData\Astrub Companion`. Aucun paquet capturé n'est enregistré sur le disque.
 
@@ -22,3 +23,7 @@ Les fichiers locaux se trouvent dans `C:\ProgramData\Astrub Companion`. Aucun pa
 Le workflow `.github/workflows/tests.yml` compile `AstrubCompanion.exe` avec PyInstaller à chaque exécution. L'exécutable n'est pas obfusqué : le fichier Python qui fait foi reste fourni et chaque build peut être reproduit depuis le dépôt.
 
 Npcap est un composant séparé distribué selon sa propre licence. Il n'est pas intégré ni redistribué dans cette archive : l'utilisateur le télécharge directement depuis le site officiel. L'installation réellement silencieuse est réservée à Npcap OEM.
+
+## Mises à jour
+
+Une tâche utilisateur vérifie GitHub à l'ouverture de session et chaque jour. Lorsqu'une version stable plus récente est disponible, Windows propose d'ouvrir la release officielle. Aucun paquet provenant d'un autre domaine n'est accepté et aucune installation administrative silencieuse n'est effectuée.

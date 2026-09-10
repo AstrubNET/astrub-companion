@@ -9,6 +9,7 @@ SERVER_NAME="$2"
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 INSTALL_DIR="/Library/Application Support/Astrub Companion"
 PLIST="/Library/LaunchDaemons/net.astrub.companion.plist"
+UPDATE_PLIST="/Library/LaunchAgents/net.astrub.companion.update.plist"
 CONFIG="$INSTALL_DIR/config.json"
 PYTHON_BIN="$(command -v python3 || true)"
 
@@ -17,7 +18,10 @@ PYTHON_BIN="$(command -v python3 || true)"
 
 mkdir -p "$INSTALL_DIR"
 install -m 755 "$SOURCE_DIR/astrub_companion.py" "$INSTALL_DIR/astrub_companion.py"
+install -m 755 "$SOURCE_DIR/RechercherUneMiseAJour.command" "$INSTALL_DIR/RechercherUneMiseAJour.command"
+printf '%s\n' '1.1.3' > "$INSTALL_DIR/version"
 /usr/bin/sed "s|__PYTHON3__|$PYTHON_BIN|g" "$SOURCE_DIR/net.astrub.companion.plist" > "$PLIST"
+install -m 644 "$SOURCE_DIR/net.astrub.companion.update.plist" "$UPDATE_PLIST"
 
 "$PYTHON_BIN" - "$CONFIG" "$SERVER_ID" "$SERVER_NAME" <<'PY'
 import json, pathlib, sys, uuid
@@ -50,5 +54,13 @@ launchctl remove net.astrub.companion 2>/dev/null || true
 launchctl bootstrap system "$PLIST"
 launchctl enable system/net.astrub.companion
 launchctl kickstart -k system/net.astrub.companion
+
+LOGIN_USER="${SUDO_USER:-}"
+if [[ -n "$LOGIN_USER" && "$LOGIN_USER" != "root" ]]; then
+    LOGIN_UID="$(id -u "$LOGIN_USER")"
+    chown "$LOGIN_USER":staff "$UPDATE_PLIST"
+    launchctl bootout "gui/$LOGIN_UID" "$UPDATE_PLIST" 2>/dev/null || true
+    launchctl bootstrap "gui/$LOGIN_UID" "$UPDATE_PLIST" 2>/dev/null || true
+fi
 
 echo "Astrub Companion installé pour $SERVER_NAME (ID $SERVER_ID)."

@@ -99,6 +99,8 @@ $selected = $servers[$combo.SelectedIndex]
 $installDir = Join-Path $env:ProgramData 'Astrub Companion'
 New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 Copy-Item (Join-Path $PSScriptRoot 'astrub_companion.py') (Join-Path $installDir 'astrub_companion.py') -Force
+Copy-Item (Join-Path $PSScriptRoot 'RechercherUneMiseAJour.ps1') (Join-Path $installDir 'RechercherUneMiseAJour.ps1') -Force
+[System.IO.File]::WriteAllText((Join-Path $installDir 'version'), "1.1.3`r`n", (New-Object System.Text.UTF8Encoding($false)))
 
 $sourceExe = Join-Path $PSScriptRoot 'AstrubCompanion.exe'
 $targetExe = Join-Path $installDir 'AstrubCompanion.exe'
@@ -142,5 +144,11 @@ $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccou
 $settings = New-ScheduledTaskSettingsSet -RestartCount 5 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) -StartWhenAvailable
 Register-ScheduledTask -TaskName 'Astrub Companion' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
 Start-ScheduledTask -TaskName 'Astrub Companion'
+
+$updateAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $installDir 'RechercherUneMiseAJour.ps1') + '"')
+$updateTriggers = @((New-ScheduledTaskTrigger -AtLogOn), (New-ScheduledTaskTrigger -Daily -At '12:00'))
+$updatePrincipal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
+Register-ScheduledTask -TaskName 'Astrub Companion Update' -Action $updateAction -Trigger $updateTriggers -Principal $updatePrincipal -Force | Out-Null
+Start-ScheduledTask -TaskName 'Astrub Companion Update'
 
 [System.Windows.Forms.MessageBox]::Show("Installation terminée pour $($selected.name) (ID $($selected.id)).`n`nAstrub Companion fonctionne maintenant en arrière-plan.", 'Astrub Companion', 'OK', 'Information') | Out-Null

@@ -1,5 +1,14 @@
 # Historique
 
+## 1.1.3
+
+- compatibilité avec les nouveaux messages HDV `kde` et `jzn` ;
+- conservation de la compatibilité avec les anciens messages `keh` et `kbt` ;
+- correction de la détection des consultations de prix après la mise à jour Dofus.
+- vérification automatique quotidienne sous Windows et toutes les six heures sous macOS ;
+- notification native lorsqu'une nouvelle release stable est disponible ;
+- commande manuelle de recherche de mise à jour sur les deux plateformes.
+
 ## 1.1.2
 
 - droits d'exécution des commandes macOS préservés dans l'archive publiée ;

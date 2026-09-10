@@ -1,6 +1,7 @@
 ﻿$ErrorActionPreference = 'SilentlyContinue'
 Stop-ScheduledTask -TaskName 'Astrub Companion'
 Unregister-ScheduledTask -TaskName 'Astrub Companion' -Confirm:$false
+Unregister-ScheduledTask -TaskName 'Astrub Companion Update' -Confirm:$false
 $path = Join-Path $env:ProgramData 'Astrub Companion'
 Remove-Item -LiteralPath $path -Recurse -Force
 Add-Type -AssemblyName System.Windows.Forms
