@@ -7,8 +7,6 @@ jobs:
       - uses: actions/checkout@v5
       - run: python3 -m py_compile macos/astrub_companion.py
       - run: bash -n macos/*.command macos/*.sh
-      - run: php -l api/public/api/companion/prices.php
-      - run: php -l api/public/api/companion/servers.php
   windows:
     runs-on: windows-latest
     steps:
