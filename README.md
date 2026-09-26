@@ -2,7 +2,7 @@
 
 Collecteur communautaire et open source de prix HDV pour **Dofus**, disponible sur Windows et macOS.
 
-Astrub Companion observe passivement les échanges réseau déjà produits lorsque le joueur consulte ou utilise un hôtel de vente. Il reconnaît uniquement les informations utiles au prix unitaire et les transmet anonymement à [Astrub.net](https://www.astrub.net/).
+Astrub Companion observe passivement les échanges réseau déjà produits lorsque le joueur consulte ou utilise un hôtel de vente. Il reconnaît uniquement les informations utiles aux prix par lot et les transmet anonymement à [Astrub.net](https://www.astrub.net/).
 
 > Projet communautaire indépendant, non édité, non approuvé et non affilié à Ankama. Dofus, Ankama et le Monde des Douze appartiennent à leurs propriétaires respectifs.
 
@@ -17,7 +17,7 @@ Les installateurs se trouvent dans la [dernière version publiée](../../release
 
 - écoute locale et passive du trafic TCP Dofus sur le port de jeu `5555` ;
 - reconnaissance des consultations HDV, achats, mises en vente et modifications de tarif ;
-- prise en compte exclusive des offres en quantité ×1 ;
+- prix minimum par lot ×1, ×10, ×100 et ×1000, parmi toutes les variantes reçues ;
 - envoi HTTPS vers Astrub.net avec mise en file locale si Internet est indisponible ;
 - aucun compte Astrub et aucun token requis.
 
@@ -95,7 +95,7 @@ L'analyse d'un protocole réseau, même passive, peut être considérée comme c
 
 ## Limites connues
 
-- seuls les prix de lots ×1 sont transmis ;
+- seuls les lots ×1, ×10, ×100 et ×1000 présents dans les réponses sont transmis ;
 - un prix n'est visible que lorsque Dofus envoie le détail de l'objet consulté ou confirme une opération reconnue ;
 - ouvrir une catégorie ne fournit pas tous ses prix et le Companion ne parcourt jamais automatiquement les objets ;
 - une modification du protocole ou du port par Ankama peut interrompre la détection ;

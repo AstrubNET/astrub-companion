@@ -9,6 +9,10 @@
 
 Le service `launchd` démarre immédiatement et à chaque démarrage du Mac.
 
+Lorsqu'un objet est consulté en HDV, le Companion transmet séparément les prix
+disponibles des lots ×1, ×10, ×100 et ×1000. Un lot absent n'est ni inventé ni
+envoyé avec un prix nul : les autres quantités visibles restent collectées.
+
 ## Commandes fournies
 
 - `Statut.command` : état et derniers événements ;
@@ -37,3 +41,5 @@ chmod +x *.command *.sh
 ```
 
 Vous pouvez également écrire `chmod +x ` (avec un espace), faire glisser `Installer.command` dans la fenêtre Terminal, puis appuyer sur Entrée. Faites ensuite un clic droit sur le fichier et choisissez **Ouvrir**.
+
+Les consultations transmettent le prix minimum par lot parmi toutes les variantes reçues du même objet.

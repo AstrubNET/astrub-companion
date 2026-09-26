@@ -100,7 +100,7 @@ $installDir = Join-Path $env:ProgramData 'Astrub Companion'
 New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 Copy-Item (Join-Path $PSScriptRoot 'astrub_companion.py') (Join-Path $installDir 'astrub_companion.py') -Force
 Copy-Item (Join-Path $PSScriptRoot 'RechercherUneMiseAJour.ps1') (Join-Path $installDir 'RechercherUneMiseAJour.ps1') -Force
-[System.IO.File]::WriteAllText((Join-Path $installDir 'version'), "1.1.3`r`n", (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText((Join-Path $installDir 'version'), "1.2.1`r`n", (New-Object System.Text.UTF8Encoding($false)))
 
 $sourceExe = Join-Path $PSScriptRoot 'AstrubCompanion.exe'
 $targetExe = Join-Path $installDir 'AstrubCompanion.exe'

@@ -19,7 +19,7 @@ PYTHON_BIN="$(command -v python3 || true)"
 mkdir -p "$INSTALL_DIR"
 install -m 755 "$SOURCE_DIR/astrub_companion.py" "$INSTALL_DIR/astrub_companion.py"
 install -m 755 "$SOURCE_DIR/RechercherUneMiseAJour.command" "$INSTALL_DIR/RechercherUneMiseAJour.command"
-printf '%s\n' '1.1.3' > "$INSTALL_DIR/version"
+printf '%s\n' '1.2.1' > "$INSTALL_DIR/version"
 /usr/bin/sed "s|__PYTHON3__|$PYTHON_BIN|g" "$SOURCE_DIR/net.astrub.companion.plist" > "$PLIST"
 install -m 644 "$SOURCE_DIR/net.astrub.companion.update.plist" "$UPDATE_PLIST"
 

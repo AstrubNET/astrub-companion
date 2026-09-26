@@ -1,5 +1,18 @@
 # Historique
 
+## 1.2.1
+
+- minimum par lot sur toutes les variantes reçues en HDV équipements et ressources ;
+- lots ×1, ×10, ×100 et ×1000 conservés, prix nuls ignorés ;
+- sources synchronisées avec les archives versionnées 1.2.0 ;
+- tests de non-régression macOS et Windows, dont le cas équipement 8215 à 180 kamas ;
+- archives publiées uniquement après réussite des tests.
+
+## 1.2.0
+
+- collecte des quatre tailles de lots et déduplication par quantité ;
+- reprise des contributions rejetées à cause du champ `device_id`.
+
 ## 1.1.3
 
 - compatibilité avec les nouveaux messages HDV `kde` et `jzn` ;

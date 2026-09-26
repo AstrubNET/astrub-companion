@@ -2,13 +2,13 @@
 
 $installDir = Join-Path $env:ProgramData 'Astrub Companion'
 $versionFile = Join-Path $installDir 'version'
-$currentVersion = [version]'1.1.3'
+$currentVersion = [version]'1.2.1'
 if (Test-Path $versionFile) {
     try { $currentVersion = [version](Get-Content $versionFile -Raw).Trim().TrimStart('v') } catch {}
 }
 
 try {
-    $headers = @{ Accept = 'application/vnd.github+json'; 'User-Agent' = 'Astrub-Companion-Updater/1.1.3' }
+    $headers = @{ Accept = 'application/vnd.github+json'; 'User-Agent' = 'Astrub-Companion-Updater/1.2.1' }
     $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/AstrubNET/astrub-companion/releases/latest' -Headers $headers -TimeoutSec 15
     if ($release.draft -or $release.prerelease) { exit }
     $latestVersion = [version]([string]$release.tag_name).TrimStart('v')

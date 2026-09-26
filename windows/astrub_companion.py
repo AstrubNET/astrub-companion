@@ -27,6 +27,7 @@ APP_DIR = Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / "Astrub Compa
 DEFAULT_CONFIG = APP_DIR / "config.json"
 DEFAULT_DB = APP_DIR / "queue.sqlite3"
 TYPE_PREFIX = "type.ankama.com/"
+MARKET_LOT_SIZES = (1, 10, 100, 1000)
 
 
 def read_varint(data: bytes, pos: int = 0):
@@ -40,6 +41,15 @@ def read_varint(data: bytes, pos: int = 0):
             return value, pos
         shift += 7
     raise ValueError("varint incomplet")
+
+
+def read_packed_varints(data: bytes):
+    values = []
+    pos = 0
+    while pos < len(data):
+        value, pos = read_varint(data, pos)
+        values.append(value)
+    return values
 
 
 def protobuf_fields(data: bytes):
@@ -255,44 +265,43 @@ def decode_kes_update(payload: bytes):
         return None, None, None
 
 
-def decode_kbt_market_view(payload: bytes):
-    """Extract (item_id, unit_price) from a detailed resource-market response."""
+def decode_market_view(payload: bytes, item_field: int, details_field: int, detail_item_field: int):
+    """Return the minimum positive total price per lot across all item variants."""
     try:
         fields = protobuf_fields(payload)
         outer = {number: value for number, wire, value in fields if wire == 0}
-        details = next(value for number, wire, value in fields if number == 3 and wire == 2)
-        detail_fields = protobuf_fields(details)
-        inner = {number: value for number, wire, value in detail_fields if wire == 0}
-        packed_prices = next(
-            value for number, wire, value in detail_fields if number == 6 and wire == 2
-        )
-        price, _ = read_varint(packed_prices)
-        item_id = outer.get(2)
-        if item_id != inner.get(5):
+        item_id = outer.get(item_field)
+        if not isinstance(item_id, int) or item_id <= 0:
             return None, None
-        return item_id, price
-    except (StopIteration, ValueError):
+        minimums = {}
+        for number, wire, details in fields:
+            if number != details_field or wire != 2:
+                continue
+            detail_fields = protobuf_fields(details)
+            inner = {n: value for n, w, value in detail_fields if w == 0}
+            if inner.get(detail_item_field) != item_id:
+                continue
+            prices = []
+            for n, w, value in detail_fields:
+                if n == 6 and w == 2:
+                    prices.extend(read_packed_varints(value))
+                elif n == 6 and w == 0:
+                    prices.append(value)
+            for lot_size, price in zip(MARKET_LOT_SIZES, prices):
+                if price > 0:
+                    minimums[lot_size] = min(price, minimums.get(lot_size, price))
+        return item_id, [(lot, minimums[lot]) for lot in MARKET_LOT_SIZES if lot in minimums]
+    except ValueError:
+        # Never publish a partial minimum from a truncated response.
         return None, None
+
+
+def decode_kbt_market_view(payload: bytes):
+    return decode_market_view(payload, item_field=2, details_field=3, detail_item_field=5)
 
 
 def decode_jzn_market_view(payload: bytes):
-    """Extract (item_id, unit_price) from the current detailed market response."""
-    try:
-        fields = protobuf_fields(payload)
-        outer = {number: value for number, wire, value in fields if wire == 0}
-        details = next(value for number, wire, value in fields if number == 2 and wire == 2)
-        detail_fields = protobuf_fields(details)
-        inner = {number: value for number, wire, value in detail_fields if wire == 0}
-        packed_prices = next(
-            value for number, wire, value in detail_fields if number == 6 and wire == 2
-        )
-        price, _ = read_varint(packed_prices)
-        item_id = outer.get(1)
-        if item_id != inner.get(2):
-            return None, None
-        return item_id, price
-    except (StopIteration, ValueError):
-        return None, None
+    return decode_market_view(payload, item_field=1, details_field=2, detail_item_field=2)
 
 
 class Queue:
@@ -316,6 +325,17 @@ class Queue:
                 error TEXT NOT NULL
             )
         """)
+        # Une version momentanément incompatible de l'API a refusé device_id.
+        # Ces observations sont sûres à rejouer grâce à leur event_id idempotent.
+        recoverable = self.db.execute(
+            "SELECT id,payload FROM rejected WHERE error LIKE '%fields%device_id%'"
+        ).fetchall()
+        for rejected_id, payload in recoverable:
+            self.db.execute(
+                "INSERT INTO pending(created_at,payload) VALUES (?,?)",
+                (int(time.time()), payload),
+            )
+            self.db.execute("DELETE FROM rejected WHERE id=?", (rejected_id,))
         self.db.commit()
 
     def add(self, payload):
@@ -410,38 +430,54 @@ class Companion:
             return
         if direction == "in" and message_type in {"kbt", "jzn"}:
             decoder = decode_kbt_market_view if message_type == "kbt" else decode_jzn_market_view
-            item_id, price = decoder(payload)
+            item_id, offers = decoder(payload)
             requested_at = self.pending_market_views.get(item_id)
-            if item_id is None or price is None or price <= 0 or requested_at is None:
-                if item_id is not None and price == 0:
+            if item_id is None or offers is None or requested_at is None:
+                return
+            if not offers:
+                if item_id is not None:
                     self.pending_market_views.pop(item_id, None)
-                    logging.info("Consultation HDV ignorée: item=%s sans offre x1", item_id)
+                    logging.info("Consultation HDV ignorée: item=%s sans lot disponible", item_id)
                 return
             if now - requested_at > self.config.get("market_view_ttl_seconds", 20):
                 self.pending_market_views.pop(item_id, None)
                 return
             self.pending_market_views.pop(item_id, None)
             dedupe_seconds = self.config.get("market_view_dedupe_seconds", 300)
-            previous = self.sent_market_views.get((item_id, price), 0)
-            if now - previous < dedupe_seconds:
-                logging.debug("Consultation HDV déjà transmise récemment: item=%s prix=%s", item_id, price)
-                return
             self.sent_market_views = {
                 key: seen_at for key, seen_at in self.sent_market_views.items()
                 if now - seen_at <= dedupe_seconds
             }
-            event = {
-                "server_id": self.config["server_id"],
-                "item_id": item_id,
-                "price": price,
-                "quantity": 1,
-                "source": "companion_market_view",
-                "transaction_confirmed": True,
-                "captured_at": int(now),
-            }
-            if self.enqueue_once(event, ("market_view", item_id, price)):
-                self.sent_market_views[(item_id, price)] = now
-                logging.info("Prix HDV observé: item=%s prix=%s quantité=1", item_id, price)
+            queued = 0
+            for quantity, price in offers:
+                observation = (item_id, quantity, price)
+                if now - self.sent_market_views.get(observation, 0) < dedupe_seconds:
+                    logging.debug(
+                        "Consultation HDV déjà transmise récemment: item=%s quantité=%s prix=%s",
+                        item_id,
+                        quantity,
+                        price,
+                    )
+                    continue
+                event = {
+                    "server_id": self.config["server_id"],
+                    "item_id": item_id,
+                    "price": price,
+                    "quantity": quantity,
+                    "source": "companion_market_view",
+                    "transaction_confirmed": True,
+                    "captured_at": int(now),
+                }
+                if self.enqueue_once(event, ("market_view", item_id, quantity, price)):
+                    self.sent_market_views[observation] = now
+                    queued += 1
+                    logging.info(
+                        "Prix HDV observé: item=%s prix=%s quantité=%s",
+                        item_id,
+                        price,
+                        quantity,
+                    )
+            if queued:
                 self.flush()
             return
         if direction == "out" and message_type == "kbz" and 1 in values:
@@ -504,9 +540,9 @@ class Companion:
             if not candidates:
                 return
             purchase = candidates[0]
-            if quantity != 1:
+            if quantity not in MARKET_LOT_SIZES:
                 del self.pending_purchases[purchase["offer_id"]]
-                logging.info("Achat ignoré: quantité=%s (seuls les lots x1 sont transmis)", quantity)
+                logging.info("Achat ignoré: quantité de lot non prise en charge (%s)", quantity)
                 return
             event = {
                 "server_id": self.config["server_id"],
@@ -528,8 +564,8 @@ class Companion:
             if not all(isinstance(value, int) and value > 0 for value in (item_id, price, quantity)):
                 logging.warning("Confirmation de modification kes incomplète")
                 return
-            if quantity != 1:
-                logging.info("Modification ignorée: quantité=%s (seuls les lots x1 sont transmis)", quantity)
+            if quantity not in MARKET_LOT_SIZES:
+                logging.info("Modification ignorée: quantité de lot non prise en charge (%s)", quantity)
                 return
             event = {
                 "server_id": self.config["server_id"],
@@ -552,8 +588,8 @@ class Companion:
         if not all(field in values for field in (1, 2, 3)):
             logging.warning("Message kge incomplet")
             return
-        if values[3] != 1:
-            logging.info("Mise en vente ignorée: quantité=%s (seuls les lots x1 sont transmis)", values[3])
+        if values[3] not in MARKET_LOT_SIZES:
+            logging.info("Mise en vente ignorée: quantité de lot non prise en charge (%s)", values[3])
             return
         event = {
             "server_id": self.config["server_id"],
@@ -583,7 +619,7 @@ class Companion:
                 method="POST",
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "Astrub-Companion-Windows/1.1.3",
+                    "User-Agent": "Astrub-Companion-Windows/1.2.1",
                 },
             )
             try:

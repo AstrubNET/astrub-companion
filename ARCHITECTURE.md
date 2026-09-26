@@ -6,11 +6,30 @@ Sur macOS, `launchd` exécute le collecteur et `tcpdump` lui transmet en mémoir
 
 | Usage | Séquence exigée |
 |---|---|
-| Consultation ×1 | `keh(item_id, 1)` puis réponse détaillée `kbt` du même objet |
-| Achat ×1 | `keh`, `kbm`, confirmation `kgp`, ajout inventaire `iua` |
-| Mise en vente ×1 | `keh`, `kbz`, puis `kge` |
+| Consultation par lot | `keh(item_id, 1)` puis réponse détaillée `kbt` du même objet |
+| Achat par lot | `keh`, `kbm`, confirmation `kgp`, ajout inventaire `iua` |
+| Mise en vente par lot | `keh`, `kbz`, puis `kge` |
 | Modification | confirmation serveur `kes` contenant objet, prix et quantité |
 
 Le programme n'ouvre aucune connexion vers les serveurs Ankama. Sa seule connexion sortante propre est un POST HTTPS vers l'API Astrub.net.
 
 Les identifiants techniques d'offre utilisés pour corréler localement une vente ou un achat sont supprimés avant la mise en file et ne sont jamais transmis à Astrub.net.
+
+## Minimum des consultations HDV (1.2.1)
+
+Les réponses `jzn` et `kbt` peuvent contenir plusieurs variantes du même équipement.
+Le collecteur parcourt toutes les entrées dont l’identifiant correspond à l’objet demandé,
+puis retient séparément le plus petit prix strictement positif pour chaque lot ×1, ×10,
+×100 et ×1000. Le montant transmis est le prix total du lot, sans division par sa quantité.
+Les lots absents ou à zéro ne sont pas transmis. Une réponse tronquée n’est pas publiée.
+
+Les événements d’achat, de mise en vente et de modification conservent leur fonctionnement
+1.2.0 : ils décrivent une transaction, et ne constituent pas un relevé exhaustif du marché.
+La déduplication, la file persistante et la reprise des événements rejetés pour `device_id`
+sont conservées.
+
+Les sources 1.2.1 reprennent les moteurs des archives versionnées 1.2.0 dont les SHA-256
+figurent dans les notes de cette release. Le tag 1.2.0 et les archives sans numéro de version
+contenaient encore le moteur ×1 précédent. Les commandes de notification de mise à jour
+du dépôt sont également conservées. Les futures archives sont construites depuis le tag
+après exécution des tests.

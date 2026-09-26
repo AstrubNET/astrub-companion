@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-CURRENT_VERSION="1.1.3"
+CURRENT_VERSION="1.2.1"
 VERSION_FILE="/Library/Application Support/Astrub Companion/version"
 [[ -r "$VERSION_FILE" ]] && CURRENT_VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
 
@@ -11,7 +11,7 @@ import json, sys, urllib.request
 current = tuple(int(x) for x in sys.argv[1].lstrip('v').split('.'))
 request = urllib.request.Request(
     'https://api.github.com/repos/AstrubNET/astrub-companion/releases/latest',
-    headers={'Accept': 'application/vnd.github+json', 'User-Agent': 'Astrub-Companion-Updater/1.1.3'},
+    headers={'Accept': 'application/vnd.github+json', 'User-Agent': 'Astrub-Companion-Updater/1.2.1'},
 )
 with urllib.request.urlopen(request, timeout=15) as response:
     release = json.load(response)

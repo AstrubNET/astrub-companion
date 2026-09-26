@@ -27,3 +27,5 @@ Npcap est un composant séparé distribué selon sa propre licence. Il n'est pas
 ## Mises à jour
 
 Une tâche utilisateur vérifie GitHub à l'ouverture de session et chaque jour. Lorsqu'une version stable plus récente est disponible, Windows propose d'ouvrir la release officielle. Aucun paquet provenant d'un autre domaine n'est accepté et aucune installation administrative silencieuse n'est effectuée.
+
+Les consultations transmettent le prix minimum par lot parmi toutes les variantes reçues du même objet.
