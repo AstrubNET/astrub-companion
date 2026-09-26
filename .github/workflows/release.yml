@@ -2,6 +2,8 @@ name: Publier une version
 on:
   push:
     tags: ['v*']
+    branches: [main]
+    paths: [VERSION]
 permissions:
   contents: write
 jobs:
@@ -43,12 +45,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Lire la version à publier
+        run: |
+          version="$(cat VERSION)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            [[ "$GITHUB_REF_NAME" == "v$version" ]]
+          fi
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
       - uses: actions/download-artifact@v6
         with:
           path: artifacts
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          name: Astrub Companion ${{ github.ref_name }}
+          tag_name: v${{ env.RELEASE_VERSION }}
+          target_commitish: ${{ github.sha }}
+          name: Astrub Companion v${{ env.RELEASE_VERSION }}
           body_path: RELEASE_NOTES.md
           files: artifacts/*.zip
