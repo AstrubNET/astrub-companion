@@ -6,7 +6,7 @@ Sur macOS, `launchd` exécute le collecteur et `tcpdump` lui transmet en mémoir
 
 | Usage | Séquence exigée |
 |---|---|
-| Consultation par lot | `keh(item_id, 1)` puis réponse détaillée `kbt` du même objet |
+| Consultation par lot | `keh`, `kde` ou `kcy` demandant les prix, puis réponse détaillée `kbt`, `jzn` ou `jzs` du même objet |
 | Achat par lot | `keh`, `kbm`, confirmation `kgp`, ajout inventaire `iua` |
 | Mise en vente par lot | `keh`, `kbz`, puis `kge` |
 | Modification | confirmation serveur `kes` contenant objet, prix et quantité |
@@ -15,13 +15,18 @@ Le programme n'ouvre aucune connexion vers les serveurs Ankama. Sa seule connexi
 
 Les identifiants techniques d'offre utilisés pour corréler localement une vente ou un achat sont supprimés avant la mise en file et ne sont jamais transmis à Astrub.net.
 
-## Minimum des consultations HDV (1.2.1)
+## Minimum des consultations HDV (1.2.2)
 
-Les réponses `jzn` et `kbt` peuvent contenir plusieurs variantes du même équipement.
+Les réponses `jzn`, `kbt` et `jzs` peuvent contenir plusieurs variantes du même équipement.
 Le collecteur parcourt toutes les entrées dont l’identifiant correspond à l’objet demandé,
 puis retient séparément le plus petit prix strictement positif pour chaque lot ×1, ×10,
 ×100 et ×1000. Le montant transmis est le prix total du lot, sans division par sa quantité.
 Les lots absents ou à zéro ne sont pas transmis. Une réponse tronquée n’est pas publiée.
+Depuis Dofus 3.7, `kcy` porte l'identifiant d'objet dans son premier champ et le drapeau
+de demande de prix dans le deuxième ; `jzs` porte les variantes dans son premier champ,
+l'identifiant d'objet dans le troisième et les prix par lot dans le deuxième champ de
+chaque variante. La réponse n'est retenue que si la demande de prix correspondante a été
+observée pour le même objet.
 
 Les événements d’achat, de mise en vente et de modification conservent leur fonctionnement
 1.2.0 : ils décrivent une transaction, et ne constituent pas un relevé exhaustif du marché.

@@ -265,7 +265,7 @@ def decode_kes_update(payload: bytes):
         return None, None, None
 
 
-def decode_market_view(payload: bytes, item_field: int, details_field: int, detail_item_field: int):
+def decode_market_view(payload: bytes, item_field: int, details_field: int, detail_item_field: int, price_field: int = 6):
     """Return the minimum positive total price per lot across all item variants."""
     try:
         fields = protobuf_fields(payload)
@@ -283,9 +283,9 @@ def decode_market_view(payload: bytes, item_field: int, details_field: int, deta
                 continue
             prices = []
             for n, w, value in detail_fields:
-                if n == 6 and w == 2:
+                if n == price_field and w == 2:
                     prices.extend(read_packed_varints(value))
-                elif n == 6 and w == 0:
+                elif n == price_field and w == 0:
                     prices.append(value)
             for lot_size, price in zip(MARKET_LOT_SIZES, prices):
                 if price > 0:
@@ -302,6 +302,10 @@ def decode_kbt_market_view(payload: bytes):
 
 def decode_jzn_market_view(payload: bytes):
     return decode_market_view(payload, item_field=1, details_field=2, detail_item_field=2)
+
+
+def decode_jzs_market_view(payload: bytes):
+    return decode_market_view(payload, item_field=3, details_field=1, detail_item_field=1, price_field=2)
 
 
 class Queue:
@@ -408,10 +412,10 @@ class Companion:
             if now - purchase["created_at"] <= self.config.get("purchase_ttl_seconds", 20)
         }
         values = varint_map(payload)
-        if direction == "out" and message_type in {"keh", "kde"}:
+        if direction == "out" and message_type in {"keh", "kde", "kcy"}:
             # keh annonce une sélection potentielle. Dès que l'utilisateur
             # change d'objet, l'ancienne association ne doit plus être utilisée.
-            if message_type == "keh":
+            if message_type in {"keh", "kcy"}:
                 item_id = values.get(1)
                 requests_prices = values.get(2) == 1
             else:
@@ -428,8 +432,8 @@ class Companion:
             if requests_prices:
                 self.pending_market_views[item_id] = now
             return
-        if direction == "in" and message_type in {"kbt", "jzn"}:
-            decoder = decode_kbt_market_view if message_type == "kbt" else decode_jzn_market_view
+        if direction == "in" and message_type in {"kbt", "jzn", "jzs"}:
+            decoder = {"kbt": decode_kbt_market_view, "jzn": decode_jzn_market_view, "jzs": decode_jzs_market_view}[message_type]
             item_id, offers = decoder(payload)
             requested_at = self.pending_market_views.get(item_id)
             if item_id is None or offers is None or requested_at is None:

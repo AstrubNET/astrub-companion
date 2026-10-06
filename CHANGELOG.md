@@ -1,5 +1,12 @@
 # Historique
 
+## 1.2.2
+
+- compatibilité Dofus 3.7 avec les consultations `kcy` et réponses de prix `jzs` ;
+- prix minimum conservé par taille de lot, sans publier les lots absents ou nuls ;
+- vérification de l'item 13831 à 100 000 kamas sur macOS et Windows ;
+- compatibilité maintenue avec les anciens messages `keh`, `kde`, `kbt` et `jzn`.
+
 ## 1.2.1
 
 - minimum par lot sur toutes les variantes reçues en HDV équipements et ressources ;
