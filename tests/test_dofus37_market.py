@@ -58,6 +58,7 @@ class Market37Tests(unittest.TestCase):
                 self.assertEqual(len(rows), 1)
                 event = json.loads(rows[0][0])
                 self.assertEqual((event["item_id"], event["quantity"], event["price"]), (13831, 1, 100000))
+                companion.queue.db.close()
 
     def test_minimum_per_available_lot_and_legacy_format(self):
         for platform in ("macos", "windows"):
